@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">V-Excel</string>
+    <string name="keep_signed_in">Keep signed in</string>
+    <string name="loginText">Login</string>
+    <string name="forgot_password_text">Forgot Password?</string>
+    <string name="register_text">No account yet? Create one</string>
+    <string name="password_text">Password</string>
+    <string name="email_text">Email</string>
+    <string name="title_activity_registration">Registration</string>
+    <string name="reset_enter_mail">To reset your password, please enter your email address.</string>
+    <string name="know_login_details_text">Know login details ?</string>
+    <string name="reset_text">Reset</string>
+    <string name="logout">Logout</string>
+
+    <string name="groupName">Name</string>
+    <string name="groupDesc">Description</string>
+    <string name="latitude">Latitude</string>
+    <string name="address">Address</string>
+    <string name="state">State</string>
+    <string name="country">Country</string>
+    <string name="zipcode">Zipcode</string>
+    <string name="actionName">Actions</string>
+    <string name="actionSave">Save</string>
+    <string name="gpsProvider">GPS Provider</string>
+    <string name="enableGPS">You want to enable GPS</string>
+    <string name="yesText">Yes</string>
+    <string name="noText">No</string>
+    <string name="is_public">Is Public</string>
+
+
+    <array name="colors">
+        <item>@color/color_1</item>
+        <item>@color/color_2</item>
+        <item>@color/color_3</item>
+        <item>@color/color_4</item>
+        <item>@color/color_5</item>
+        <item>@color/color_6</item>
+        <item>@color/color_7</item>
+        <item>@color/color_8</item>
+        <item>@color/color_9</item>
+        <item>@color/color_10</item>
+        <item>@color/color_11</item>
+    </array>
+    <string name="title_activity_adding_new_laundry">AddingNewLaundry</string>
+    <string name="title_activity_test">TestActivity</string>
+</resources>
