@@ -4,29 +4,19 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.mikepenz.materialdrawer.AccountHeader;
-import com.mikepenz.materialdrawer.AccountHeaderBuilder;
-import com.mikepenz.materialdrawer.Drawer;
-import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
-import com.mikepenz.materialdrawer.model.SectionDrawerItem;
-import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
-import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.pixplicity.easyprefs.library.Prefs;
 
 import java.util.ArrayList;
@@ -39,14 +29,12 @@ import retrofit.client.Response;
 import tech.paypal.app.ngo.vexcel.R;
 import tech.paypal.app.ngo.vexcel.activity.GroupCreationActivity;
 import tech.paypal.app.ngo.vexcel.activity.GroupDetailsActivity;
-import tech.paypal.app.ngo.vexcel.activity.UserProfileActivity;
 import tech.paypal.app.ngo.vexcel.activity.resources.SpacesItemDecoration;
 import tech.paypal.app.ngo.vexcel.constantsmodel.IConstants;
 import tech.paypal.app.ngo.vexcel.database.DatabaseHandler;
 import tech.paypal.app.ngo.vexcel.model.group.Groups;
+import tech.paypal.app.ngo.vexcel.model.inventory.Inventory;
 import tech.paypal.app.ngo.vexcel.model.login.GeneralError;
-import tech.paypal.app.ngo.vexcel.model.products.Product;
-import tech.paypal.app.ngo.vexcel.model.profile.UserProfile;
 import tech.paypal.app.ngo.vexcel.network.config.RestClient;
 import tech.paypal.app.ngo.vexcel.network.responses.EmptyForgotResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.MemberDataRestResponse;
@@ -56,56 +44,30 @@ import tech.paypal.app.ngo.vexcel.network.responses.member.ResultMember;
  * Created by Chokkar on 11/4/2016.
  */
 
-public class LaundryHomeActivity extends AppCompatActivity {
-    private AccountHeader headerResult = null;
-    private Toolbar toolbar;
+public class InventoryListActivity extends AppCompatActivity {
     private Context mContext;
     private RecyclerView recyclerView;
     private DatabaseHandler dbHandler;
     private ProgressDialog progressDialog;
     private String tokenKey;
     private FloatingActionButton floatingActionButton;
-    private ProductRecyclerViewAdapter mAdapter;
-    private ArrayList<Groups> groupsArrayList;
-    private static final String TAG = "LaundryHomeActivity";
-    private UserProfile userProfile;
-    private IProfile profile;
-    private Drawer result = null;
+    private InventoryRecyclerViewAdapter mAdapter;
+    private ArrayList<Inventory> inventoryArrayList;
+    private static final String TAG = "InventoryListActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.laundry_home_activity);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-//        ActionBar actionBar = getSupportActionBar();
-//        if (actionBar != null) {
-//            actionBar.setDisplayHomeAsUpEnabled(true);
-//            actionBar.setHomeButtonEnabled(true);
-//            actionBar.setTitle("Customers");
-//        }
+        setContentView(R.layout.group_activity);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setTitle("Inventory List");
+        }
         mContext = this;
         dbHandler = new DatabaseHandler(mContext);
         dbHandler.open();
-
-        profile = new ProfileDrawerItem().withEmail("").
-                withIcon(R.drawable.vexcellogo).withIdentifier(1).withSetSelected(true)
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        if (drawerItem != null) {
-                            Intent intent = null;
-                            if (drawerItem.getIdentifier() == 1) {
-                                intent = new Intent(mContext, UserProfileActivity.class);
-                            }
-                            if (intent != null) {
-                                startActivity(intent);
-                            }
-                        }
-                        return false;
-                    }
-                });
 
         tokenKey = Prefs.getString(IConstants.TOKEN_KEY, null);
         floatingActionButton = (FloatingActionButton) findViewById(R.id.fabAddGroup);
@@ -123,60 +85,7 @@ public class LaundryHomeActivity extends AppCompatActivity {
             }
         });
 
-        buildHeader(false, savedInstanceState);
-        drawerSetup(savedInstanceState);
-
-        getProductDetails();
-    }
-
-    private void buildHeader(boolean compact, Bundle savedInstanceState) {
-        headerResult = new AccountHeaderBuilder()
-                .withActivity(this)
-                .withSelectionListEnabledForSingleProfile(false)
-                .withHeaderBackground(R.drawable.header)
-                .withCompactStyle(compact)
-                .addProfiles(profile)
-                .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
-                    @Override
-                    public boolean onProfileChanged(View view, IProfile profile, boolean current) {
-                        return false;
-                    }
-                })
-                .withSavedInstance(savedInstanceState)
-                .build();
-    }
-
-    SectionDrawerItem sectionGroupDrawerItem = new SectionDrawerItem().withName("Inventory").withIdentifier(11).withDivider(false).withTextColor(Color.parseColor("#FF5722"));
-
-    private void drawerSetup(Bundle savedInstanceState) {
-        result = new DrawerBuilder()
-                .withActivity(this)
-                .withToolbar(toolbar)
-                .withAccountHeader(headerResult)
-                .addDrawerItems(
-                        sectionGroupDrawerItem,
-                        new PrimaryDrawerItem().withName("Customers").withIcon(getResources().getDrawable(R.drawable.ic_supervisor_account_black_24dp)).withIdentifier(1).withSelectable(true),
-                        new PrimaryDrawerItem().withName("Inventory").withIcon(getResources().getDrawable(R.drawable.ic_person_black_24dp)).withIdentifier(2).withSelectable(true)
-                )
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        if (drawerItem != null) {
-                            Intent intent = null;
-                            if (drawerItem.getIdentifier() == 1) {
-                                intent = new Intent(mContext, CustomerListActivity.class);
-                            } else if (drawerItem.getIdentifier() == 2) {
-                                intent = new Intent(mContext, InventoryListActivity.class);
-                            }
-                            if (intent != null) {
-                                startActivity(intent);
-                            }
-                        }
-                        return false;
-                    }
-                })
-                .withSavedInstance(savedInstanceState)
-                .build();
+        getInventoryDetails();
     }
 
     @Override
@@ -189,7 +98,7 @@ public class LaundryHomeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void getProductDetails() {
+    public void getInventoryDetails() {
         progressDialog = new ProgressDialog(mContext);
         progressDialog.setMessage("Please wait...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -197,13 +106,12 @@ public class LaundryHomeActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.show();
         RestClient.setupRestClient();
-        RestClient.get().getProductList(new Callback<List<Product>>() {
-
+        RestClient.get().getInventoryList(new Callback<List<Inventory>>() {
 
             @Override
-            public void success(List<Product> productList, Response response) {
-                Log.i(TAG , "Product List" +productList);
-                loadCustomerDetails(productList);
+            public void success(List<Inventory> inventories, Response response) {
+                Log.i(TAG , "Inventories List" +inventories);
+                loadCustomerDetails(inventories);
                 progressDialog.dismiss();
             }
 
@@ -226,13 +134,13 @@ public class LaundryHomeActivity extends AppCompatActivity {
     }
 
     // TODO: 11/13/2016
-    private void loadCustomerDetails(List<Product> productList) {
-//        groupsArrayList = dbHandler.getGroupDataList();
-        Log.i(TAG , "cUSTOMER lIST" + productList);
-        mAdapter = new ProductRecyclerViewAdapter(mContext, productList);
+    private void loadCustomerDetails(List<Inventory> inventoryList) {
+//        inventoryArrayList = dbHandler.getGroupDataList();
+        Log.i(TAG , "inventoryList" + inventoryList);
+        mAdapter = new InventoryRecyclerViewAdapter(mContext, inventoryList);
         recyclerView.setAdapter(mAdapter);
 
-        mAdapter.setOnClickListener(new ProductRecyclerViewAdapter.OnClickListener() {
+        mAdapter.setOnClickListener(new InventoryRecyclerViewAdapter.OnClickListener() {
             @Override
             public void onClick(View view, final int viewPosition) {
 //                getMemberDetails(customersArrayList.get(viewPosition));
@@ -265,9 +173,9 @@ public class LaundryHomeActivity extends AppCompatActivity {
 //                    @Override
 //                    public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
 //                        if (pos == 0) {
-//                            deleteGroupData(Integer.parseInt(groupsArrayList.get(position).getGroupId()), position);
+//                            deleteGroupData(Integer.parseInt(inventoryArrayList.get(position).getGroupId()), position);
 //                        } else if (pos == 1) {
-//                            EventBus.getDefault().postSticky(groupsArrayList.get(position));
+//                            EventBus.getDefault().postSticky(inventoryArrayList.get(position));
 //                            startActivity(new Intent(mContext, GroupUpdationActivity.class));
 //                        }
 //                        alertDialog.dismiss();
@@ -351,7 +259,7 @@ public class LaundryHomeActivity extends AppCompatActivity {
             @Override
             public void success(EmptyForgotResponse emptyForgotResponse, Response response) {
                 progressDialog.dismiss();
-                groupsArrayList.remove(position);
+                inventoryArrayList.remove(position);
                 dbHandler.deleteGroup(groupId);
                 mAdapter.notifyDataSetChanged();
             }

@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         userProfile = databaseHandler.getUserData();
 
         profile = new ProfileDrawerItem().withEmail(userProfile.getFirstName() + " " + userProfile.getLastName()).
-                withIcon(R.drawable.profile).withIdentifier(1).withSetSelected(true)
+                withIcon(R.drawable.vexcellogo).withIdentifier(1).withSetSelected(true)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {

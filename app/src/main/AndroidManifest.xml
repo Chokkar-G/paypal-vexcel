@@ -74,6 +74,19 @@
             <!-- android:launchMode="singleTask" -->
 
         </activity>
+
+        <activity
+            android:name=".activity.laundry.InventoryListActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="Inventory"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" >
+
+            <!-- android:launchMode="singleTask" -->
+
+        </activity>
+
+
         <activity
             android:name=".activity.UserProfileActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -94,11 +107,6 @@
             android:name=".activity.GroupUpdationActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="Group"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.MemberCreationActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="Member"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.GroupInfoDetailsActivity"

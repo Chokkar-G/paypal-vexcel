@@ -14,6 +14,7 @@ import retrofit.http.Path;
 import tech.paypal.app.ngo.vexcel.model.customers.Customer;
 import tech.paypal.app.ngo.vexcel.model.forgotpassword.ForgotPassword;
 import tech.paypal.app.ngo.vexcel.model.group.GroupCreateModel;
+import tech.paypal.app.ngo.vexcel.model.inventory.Inventory;
 import tech.paypal.app.ngo.vexcel.model.login.Login;
 import tech.paypal.app.ngo.vexcel.model.member.MemberCreateData;
 import tech.paypal.app.ngo.vexcel.model.products.Product;
@@ -40,6 +41,9 @@ public interface Restapi {
 
     @GET("/api/customers/")
     void getCustomersList(Callback<List<Customer>> callback);
+
+    @GET("/api/inventory/")
+    void getInventoryList(Callback<List<Inventory>> callback);
 
     @GET("/api/products/")
     void getProductList(Callback<List<Product>> callback);
