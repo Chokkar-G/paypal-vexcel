@@ -39,7 +39,9 @@ import retrofit.client.Response;
 import tech.paypal.app.ngo.vexcel.R;
 import tech.paypal.app.ngo.vexcel.activity.GroupCreationActivity;
 import tech.paypal.app.ngo.vexcel.activity.GroupDetailsActivity;
+import tech.paypal.app.ngo.vexcel.activity.MemberCreationActivity;
 import tech.paypal.app.ngo.vexcel.activity.UserProfileActivity;
+import tech.paypal.app.ngo.vexcel.activity.customer.CustomerCreationActivity;
 import tech.paypal.app.ngo.vexcel.activity.resources.SpacesItemDecoration;
 import tech.paypal.app.ngo.vexcel.constantsmodel.IConstants;
 import tech.paypal.app.ngo.vexcel.database.DatabaseHandler;
@@ -119,7 +121,7 @@ public class LaundryHomeActivity extends AppCompatActivity {
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(mContext, GroupCreationActivity.class));
+                startActivity(new Intent(mContext, CustomerCreationActivity.class));
             }
         });
 

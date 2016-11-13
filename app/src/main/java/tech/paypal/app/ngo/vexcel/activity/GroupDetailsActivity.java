@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
 import java.util.ArrayList;
 
 import de.greenrobot.event.EventBus;

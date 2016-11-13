@@ -97,6 +97,14 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="Group"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.customer.CustomerCreationActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="Add New Customer"
+            android:screenOrientation="portrait" />
+
+
         <activity
             android:name=".activity.GroupDetailsActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

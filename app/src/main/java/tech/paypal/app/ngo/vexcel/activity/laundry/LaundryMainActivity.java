@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -32,10 +31,8 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import tech.paypal.app.ngo.vexcel.R;
-import tech.paypal.app.ngo.vexcel.activity.GroupActivity;
 import tech.paypal.app.ngo.vexcel.activity.LoginActivity;
 import tech.paypal.app.ngo.vexcel.activity.UserProfileActivity;
-import tech.paypal.app.ngo.vexcel.adapter.CustomListView;
 import tech.paypal.app.ngo.vexcel.constantsmodel.IConstants;
 import tech.paypal.app.ngo.vexcel.database.DatabaseHandler;
 import tech.paypal.app.ngo.vexcel.model.customers.Customer;

@@ -17,9 +17,9 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import tech.paypal.app.ngo.vexcel.R;
 import tech.paypal.app.ngo.vexcel.model.errorhandler.CommonBaseError;
+import tech.paypal.app.ngo.vexcel.model.registration.Registration;
 import tech.paypal.app.ngo.vexcel.network.config.RestClient;
 import tech.paypal.app.ngo.vexcel.network.responses.RegisterResponse;
-import tech.paypal.app.ngo.vexcel.model.registration.Registration;
 
 /**
  * Created by Ravikumar on 11/3/2016.

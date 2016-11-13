@@ -19,15 +19,15 @@ import tech.paypal.app.ngo.vexcel.model.login.Login;
 import tech.paypal.app.ngo.vexcel.model.member.MemberCreateData;
 import tech.paypal.app.ngo.vexcel.model.products.Product;
 import tech.paypal.app.ngo.vexcel.model.profile.ProfileConfig;
+import tech.paypal.app.ngo.vexcel.model.registration.Registration;
 import tech.paypal.app.ngo.vexcel.network.responses.EmptyForgotResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.GroupRestResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.LoginRestResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.MemberDataRestResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.RegisterResponse;
+import tech.paypal.app.ngo.vexcel.network.responses.UpdateProfileRestResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.group.GroupUpdateRestResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.group.Result;
-import tech.paypal.app.ngo.vexcel.network.responses.UpdateProfileRestResponse;
-import tech.paypal.app.ngo.vexcel.model.registration.Registration;
 import tech.paypal.app.ngo.vexcel.network.responses.member.ResultMember;
 
 /**
@@ -47,6 +47,9 @@ public interface Restapi {
 
     @GET("/api/products/")
     void getProductList(Callback<List<Product>> callback);
+
+    @POST("/api/customers/")
+    void createCustomer(@Body Customer customer, Callback<Customer> callback);
 
     @POST("/auth/password/reset/")
     void resetUserLogin(@Body ForgotPassword forgotPassword, Callback<EmptyForgotResponse> callback);
