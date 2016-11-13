@@ -24,7 +24,7 @@ public class AddingNewLaundry extends Activity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context,LaundryMainActivity.class);
+                Intent intent = new Intent(context,LaundryHomeActivity.class);
                 startActivity(intent);
 
             }

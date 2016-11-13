@@ -16,6 +16,7 @@ import tech.paypal.app.ngo.vexcel.model.forgotpassword.ForgotPassword;
 import tech.paypal.app.ngo.vexcel.model.group.GroupCreateModel;
 import tech.paypal.app.ngo.vexcel.model.login.Login;
 import tech.paypal.app.ngo.vexcel.model.member.MemberCreateData;
+import tech.paypal.app.ngo.vexcel.model.products.Product;
 import tech.paypal.app.ngo.vexcel.model.profile.ProfileConfig;
 import tech.paypal.app.ngo.vexcel.network.responses.EmptyForgotResponse;
 import tech.paypal.app.ngo.vexcel.network.responses.GroupRestResponse;
@@ -39,6 +40,9 @@ public interface Restapi {
 
     @GET("/api/customers/")
     void getCustomersList(Callback<List<Customer>> callback);
+
+    @GET("/api/products/")
+    void getProductList(Callback<List<Product>> callback);
 
     @POST("/auth/password/reset/")
     void resetUserLogin(@Body ForgotPassword forgotPassword, Callback<EmptyForgotResponse> callback);

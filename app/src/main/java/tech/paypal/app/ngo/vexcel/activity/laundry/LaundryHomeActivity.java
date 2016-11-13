@@ -2,17 +2,20 @@ package tech.paypal.app.ngo.vexcel.activity.laundry;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -26,62 +29,66 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.pixplicity.easyprefs.library.Prefs;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import tech.paypal.app.ngo.vexcel.R;
-import tech.paypal.app.ngo.vexcel.activity.GroupActivity;
-import tech.paypal.app.ngo.vexcel.activity.LoginActivity;
+import tech.paypal.app.ngo.vexcel.activity.GroupCreationActivity;
+import tech.paypal.app.ngo.vexcel.activity.GroupDetailsActivity;
+import tech.paypal.app.ngo.vexcel.activity.MemberCreationActivity;
 import tech.paypal.app.ngo.vexcel.activity.UserProfileActivity;
-import tech.paypal.app.ngo.vexcel.adapter.CustomListView;
+import tech.paypal.app.ngo.vexcel.activity.resources.SpacesItemDecoration;
 import tech.paypal.app.ngo.vexcel.constantsmodel.IConstants;
 import tech.paypal.app.ngo.vexcel.database.DatabaseHandler;
-import tech.paypal.app.ngo.vexcel.model.customers.Customer;
+import tech.paypal.app.ngo.vexcel.model.group.Groups;
 import tech.paypal.app.ngo.vexcel.model.login.GeneralError;
+import tech.paypal.app.ngo.vexcel.model.products.Product;
 import tech.paypal.app.ngo.vexcel.model.profile.UserProfile;
 import tech.paypal.app.ngo.vexcel.network.config.RestClient;
 import tech.paypal.app.ngo.vexcel.network.responses.EmptyForgotResponse;
+import tech.paypal.app.ngo.vexcel.network.responses.MemberDataRestResponse;
+import tech.paypal.app.ngo.vexcel.network.responses.member.ResultMember;
 
 /**
- * Created by Ravikumar on 11/4/2016.
+ * Created by Chokkar on 11/4/2016.
  */
 
-public class LaundryMainActivity extends AppCompatActivity {
+public class LaundryHomeActivity extends AppCompatActivity {
     private AccountHeader headerResult = null;
-    private Drawer result = null;
     private Toolbar toolbar;
-    private IProfile profile;
     private Context mContext;
-    private String userNameInfo;
+    private RecyclerView recyclerView;
+    private DatabaseHandler dbHandler;
     private ProgressDialog progressDialog;
     private String tokenKey;
-    private DatabaseHandler databaseHandler;
+    private FloatingActionButton floatingActionButton;
+    private ProductRecyclerViewAdapter mAdapter;
+    private ArrayList<Groups> groupsArrayList;
+    private static final String TAG = "LaundryHomeActivity";
     private UserProfile userProfile;
-    String[] title = new String[]{"Gym", "Swimming", "Theatres"};
-    String[] subTitle = new String[]{"Gymnastic Place", "Both place", "Entertainment Place"};
-    private static final String TAG = "LaundryMainActivity";
-    private RecyclerView recyclerView;
-    private CustomerRecyclerViewAdapter mAdapter;
-
-
+    private IProfile profile;
+    private Drawer result = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.laundry_main_activity);
-
-        mContext = this;
-        databaseHandler = new DatabaseHandler(mContext);
-        databaseHandler.open();
-        userNameInfo = Prefs.getString(IConstants.USER_LOGGED, null);
+        setContentView(R.layout.laundry_home_activity);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        tokenKey = Prefs.getString(IConstants.TOKEN_KEY, null);
         setSupportActionBar(toolbar);
-        recyclerView = (RecyclerView) findViewById(R.id.laundryRecycleView);
 
-        userProfile = databaseHandler.getUserData();
+//        ActionBar actionBar = getSupportActionBar();
+//        if (actionBar != null) {
+//            actionBar.setDisplayHomeAsUpEnabled(true);
+//            actionBar.setHomeButtonEnabled(true);
+//            actionBar.setTitle("Customers");
+//        }
+        mContext = this;
+        dbHandler = new DatabaseHandler(mContext);
+        dbHandler.open();
 
         profile = new ProfileDrawerItem().withEmail("").
                 withIcon(R.drawable.profile).withIdentifier(1).withSetSelected(true)
@@ -101,11 +108,43 @@ public class LaundryMainActivity extends AppCompatActivity {
                     }
                 });
 
+        tokenKey = Prefs.getString(IConstants.TOKEN_KEY, null);
+        floatingActionButton = (FloatingActionButton) findViewById(R.id.fabAddGroup);
+        recyclerView = (RecyclerView) findViewById(R.id.groupRecycleView);
+        recyclerView.addItemDecoration(new SpacesItemDecoration(10));
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(llm);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(mContext, GroupCreationActivity.class));
+            }
+        });
+
         buildHeader(false, savedInstanceState);
         drawerSetup(savedInstanceState);
 
-        getCustomerDetails();
+        getProductDetails();
+    }
 
+    private void buildHeader(boolean compact, Bundle savedInstanceState) {
+        headerResult = new AccountHeaderBuilder()
+                .withActivity(this)
+                .withSelectionListEnabledForSingleProfile(false)
+                .withHeaderBackground(R.drawable.header)
+                .withCompactStyle(compact)
+                .addProfiles(profile)
+                .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
+                    @Override
+                    public boolean onProfileChanged(View view, IProfile profile, boolean current) {
+                        return false;
+                    }
+                })
+                .withSavedInstance(savedInstanceState)
+                .build();
     }
 
     SectionDrawerItem sectionGroupDrawerItem = new SectionDrawerItem().withName("Users").withIdentifier(11).withDivider(false).withTextColor(Color.parseColor("#FF5722"));
@@ -141,78 +180,17 @@ public class LaundryMainActivity extends AppCompatActivity {
                 .build();
     }
 
-    private void buildHeader(boolean compact, Bundle savedInstanceState) {
-        headerResult = new AccountHeaderBuilder()
-                .withActivity(this)
-                .withSelectionListEnabledForSingleProfile(false)
-                .withHeaderBackground(R.drawable.header)
-                .withCompactStyle(compact)
-                .addProfiles(profile)
-                .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
-                    @Override
-                    public boolean onProfileChanged(View view, IProfile profile, boolean current) {
-                        return false;
-                    }
-                })
-                .withSavedInstance(savedInstanceState)
-                .build();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_logout) {
-            logoutUser();
-            return true;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    private void logoutUser() {
-        progressDialog = new ProgressDialog(mContext);
-        progressDialog.setMessage("Logging out...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-        RestClient.setupRestClient();
-        RestClient.get().logout(tokenKey, "Dummy", new Callback<EmptyForgotResponse>() {
-            @Override
-            public void success(EmptyForgotResponse emptyForgotResponse, Response response) {
-                progressDialog.dismiss();
-                logoutIntent();
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                progressDialog.dismiss();
-                GeneralError generalError = (GeneralError) error.getBodyAs(GeneralError.class);
-                if (generalError != null) {
-                    Toast.makeText(mContext, "" + generalError.getError().getMessage() + "\n"
-                            + generalError.getError().getDetail(), Toast.LENGTH_LONG).show();
-                }
-                logoutIntent();
-            }
-        });
-    }
-
-    private void logoutIntent() {
-        Prefs.putString(IConstants.TOKEN_KEY, null);
-        databaseHandler.clearTables();
-        Intent selectionIntent = new Intent(mContext, LoginActivity.class);
-        selectionIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(selectionIntent);
-        finish();
-    }
-
-    public void getCustomerDetails() {
+    public void getProductDetails() {
         progressDialog = new ProgressDialog(mContext);
         progressDialog.setMessage("Please wait...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -220,16 +198,14 @@ public class LaundryMainActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.show();
         RestClient.setupRestClient();
-        RestClient.get().getCustomersList(new Callback<List<Customer>>() {
+        RestClient.get().getProductList(new Callback<List<Product>>() {
 
 
             @Override
-            public void success(List<Customer> customers, Response response) {
-                Log.i(TAG , "Customer List" +customers);
-                loadCustomerDetails(customers);
+            public void success(List<Product> productList, Response response) {
+                Log.i(TAG , "Product List" +productList);
+                loadCustomerDetails(productList);
                 progressDialog.dismiss();
-
-
             }
 
             @Override
@@ -244,13 +220,20 @@ public class LaundryMainActivity extends AppCompatActivity {
         });
     }
 
-    private void loadCustomerDetails(List<Customer> customersArrayList) {
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+//        loadCustomerDetails();
+    }
+
+    // TODO: 11/13/2016
+    private void loadCustomerDetails(List<Product> productList) {
 //        groupsArrayList = dbHandler.getGroupDataList();
-        Log.i(TAG , "cUSTOMER lIST" + customersArrayList);
-        mAdapter = new CustomerRecyclerViewAdapter(mContext, customersArrayList);
+        Log.i(TAG , "cUSTOMER lIST" + productList);
+        mAdapter = new ProductRecyclerViewAdapter(mContext, productList);
         recyclerView.setAdapter(mAdapter);
 
-        mAdapter.setOnClickListener(new CustomerRecyclerViewAdapter.OnClickListener() {
+        mAdapter.setOnClickListener(new ProductRecyclerViewAdapter.OnClickListener() {
             @Override
             public void onClick(View view, final int viewPosition) {
 //                getMemberDetails(customersArrayList.get(viewPosition));
@@ -293,5 +276,96 @@ public class LaundryMainActivity extends AppCompatActivity {
 //                });
 //            }
 //        });
+    }
+
+    private void getMemberDetails(final Groups groups) {
+        progressDialog = new ProgressDialog(mContext);
+        progressDialog.setMessage("Please wait...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        RestClient.setupRestClient();
+        RestClient.get().membersList(tokenKey, groups.getGroupId(), new Callback<MemberDataRestResponse>() {
+            @Override
+            public void success(MemberDataRestResponse memberDataRestResponse, Response response) {
+                progressDialog.dismiss();
+                ArrayList<ResultMember> resultMember = memberDataRestResponse.getResultMembers();
+                for (ResultMember member : resultMember) {
+                    dbHandler.saveMemberData(Integer.toString(member.getId()), groups.getGroupId(), member.getMember(), Boolean.toString(member.getIsAdmin()),
+                            Integer.toString(member.getRole()), Integer.toString(member.getStatus()));
+                }
+                EventBus.getDefault().postSticky(groups);
+                startActivity(new Intent(mContext, GroupDetailsActivity.class));
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                progressDialog.dismiss();
+                GeneralError generalError = (GeneralError) error.getBodyAs(GeneralError.class);
+                if (generalError != null) {
+                    Toast.makeText(mContext, "" + generalError.getError().getMessage(), Toast.LENGTH_LONG).show();
+                    wantMember(groups);
+                }
+            }
+        });
+    }
+
+    private void wantMember(final Groups groups) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(mContext);
+        builder1.setMessage("You want to subscribe this group?");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Subscribe",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                        EventBus.getDefault().postSticky(groups);
+                        Intent intent = new Intent(mContext, MemberCreationActivity.class);
+                        intent.putExtra("subscribe", "subscribe");
+                        startActivity(intent);
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+    }
+
+    private void deleteGroupData(final int groupId, final int position) {
+        progressDialog = new ProgressDialog(mContext);
+        progressDialog.setMessage("Please wait...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        RestClient.setupRestClient();
+        RestClient.get().groupDatasDelete(tokenKey, Integer.toString(groupId), new Callback<EmptyForgotResponse>() {
+            @Override
+            public void success(EmptyForgotResponse emptyForgotResponse, Response response) {
+                progressDialog.dismiss();
+                groupsArrayList.remove(position);
+                dbHandler.deleteGroup(groupId);
+                mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                progressDialog.dismiss();
+                GeneralError generalError = (GeneralError) error.getBodyAs(GeneralError.class);
+                if (generalError != null) {
+                    Toast.makeText(mContext, "" + generalError.getError().getMessage() + "\n"
+                            + generalError.getError().getDetail(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }

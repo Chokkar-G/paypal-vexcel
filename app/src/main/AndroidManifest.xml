@@ -50,6 +50,13 @@
             android:label="Resources"
             android:screenOrientation="portrait"
             android:theme="@style/GeoDroid.AppTheme" />
+
+        <activity
+            android:name=".activity.laundry.LaundryHomeActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="Products"
+            android:screenOrientation="portrait"
+            android:theme="@style/GeoDroid.AppTheme" />
         <activity
             android:name=".activity.GroupActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
